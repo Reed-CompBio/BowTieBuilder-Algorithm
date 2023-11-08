@@ -23,9 +23,10 @@ def parse_arguments():
 
 
 # functions for reading input files
-def read_network(network_file : Path) -> list:
+def read_edges(edge_file : Path) -> list:
     network = []
-    with open(network_file, 'r') as f:
+    print(edge_file)
+    with open(edge_file, 'r') as f:
         for line in (f):
             line = line.strip()
             line = line.split('\t')
@@ -47,6 +48,7 @@ def read_source_target(source_file : Path, target_file : Path) -> tuple:
 
 # functions for constructing the network
 def construct_network(network : list, source : list, target : list) -> nx.DiGraph:
+    print(network)
     Network = nx.DiGraph()
     Network.add_weighted_edges_from(network)
     Network.add_nodes_from(source)
@@ -245,8 +247,9 @@ def write_output(output_file, P):
 def btb_wrapper(edges : Path, sources : Path, targets : Path, output_file : Path):
     """
     Run BowTieBuilder pathway reconstruction.
-    @param network_file: Path to the network file
-    @param source_target_file: Path to the source/target file
+    @param edges: Path to the edge file
+    @param sources: Path to the source file
+    @param targets: Path to the source file
     @param output_file: Path to the output file that will be written
     """
     if not edges.exists():
@@ -264,7 +267,7 @@ def btb_wrapper(edges : Path, sources : Path, targets : Path, output_file : Path
     output_file.parent.mkdir(parents=True, exist_ok=True)
     
     
-    edge_list = read_network(edges)
+    edge_list = read_edges(edges)
     source, target = read_source_target(sources, targets)
     network = construct_network(edge_list, source, target)
 
