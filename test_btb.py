@@ -23,9 +23,9 @@ class TestBowTieBuilder:
     """
     def test_btb(self):
         BTB_OUT_FILE.unlink(missing_ok=True)
-        btb_wrapper(edges=Path(TEST_DIR, 'input', 'btb-edges.txt'),
-                           sources=Path(TEST_DIR, 'input', 'btb-sources.txt'),
-                           targets=Path(TEST_DIR, 'input', 'btb-targets.txt'),
+        btb_wrapper(network_file=Path(TEST_DIR, 'input', 'btb-edges.txt'),
+                           source_file=Path(TEST_DIR, 'input', 'btb-sources.txt'),
+                           target_file=Path(TEST_DIR, 'input', 'btb-targets.txt'),
                            output_file=BTB_OUT_FILE)
         assert BTB_OUT_FILE.exists(), 'Output file was not written'
         expected_file = Path(TEST_DIR, 'expected_output', 'btb-output.txt')
@@ -44,9 +44,9 @@ class TestBowTieBuilder:
     """
     def test_disjoint(self):
         DISJOINT_OUT_FILE.unlink(missing_ok=True)
-        btb_wrapper(edges=Path(TEST_DIR, 'input', 'disjoint-edges.txt'),
-                           sources=Path(TEST_DIR, 'input', 'disjoint-sources.txt'),
-                           targets=Path(TEST_DIR, 'input', 'disjoint-targets.txt'),
+        btb_wrapper(network_file=Path(TEST_DIR, 'input', 'disjoint-edges.txt'),
+                           source_file=Path(TEST_DIR, 'input', 'disjoint-sources.txt'),
+                           target_file=Path(TEST_DIR, 'input', 'disjoint-targets.txt'),
                            output_file=DISJOINT_OUT_FILE)
         assert DISJOINT_OUT_FILE.exists(), 'Output file was not written'
         expected_file = Path(TEST_DIR, 'expected_output', 'disjoint-output.txt')
@@ -65,9 +65,9 @@ class TestBowTieBuilder:
     """
     def test_disjoint2(self):
         DISJOINT2_OUT_FILE.unlink(missing_ok=True)
-        btb_wrapper(edges=Path(TEST_DIR, 'input', 'disjoint2-edges.txt'),
-                           sources=Path(TEST_DIR, 'input', 'disjoint-sources.txt'),
-                           targets=Path(TEST_DIR, 'input', 'disjoint-targets.txt'),
+        btb_wrapper(network_file=Path(TEST_DIR, 'input', 'disjoint2-edges.txt'),
+                           source_file=Path(TEST_DIR, 'input', 'disjoint-sources.txt'),
+                           target_file=Path(TEST_DIR, 'input', 'disjoint-targets.txt'),
                            output_file=DISJOINT2_OUT_FILE)
         assert DISJOINT2_OUT_FILE.exists(), 'Output file was not written'
         expected_file = Path(TEST_DIR, 'expected_output', 'disjoint-output.txt')
@@ -86,9 +86,9 @@ class TestBowTieBuilder:
     """
     def test_missing_file(self):
         with pytest.raises(OSError):
-            btb_wrapper(edges=Path(TEST_DIR, 'input', 'missing.txt'),
-                           sources=Path(TEST_DIR, 'input', 'btb-sources.txt'),
-                           targets=Path(TEST_DIR, 'input', 'btb-targets.txt'),
+            btb_wrapper(network_file=Path(TEST_DIR, 'input', 'missing.txt'),
+                           source_file=Path(TEST_DIR, 'input', 'btb-sources.txt'),
+                           target_file=Path(TEST_DIR, 'input', 'btb-targets.txt'),
                            output_file=OUT_FILE)
 
     # """
