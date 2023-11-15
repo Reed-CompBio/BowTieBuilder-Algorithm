@@ -1,6 +1,6 @@
 Node1	Node2
 S1	A
-A	T1
-A	T2
-S2	B
-B	T3
+S2	C
+C	T2
+A	B
+B	T1

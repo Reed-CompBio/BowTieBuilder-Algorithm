@@ -1,5 +1,5 @@
 S1	A	1
-A	T1	1
-A	T2	1
-S2	B	1
-B	T3	1
+A	B	1
+B	T1	1
+S2	C	1
+C	T2	1

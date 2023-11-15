@@ -172,7 +172,7 @@ class TestBowTieBuilder:
                            target_file=Path(TEST_DIR, 'input', 'btb-targets.txt'),
                            output_file=TARGET_TO_SOURCE_OUT_FILE)
         assert TARGET_TO_SOURCE_OUT_FILE.exists(), 'Output file was not written'
-        expected_file = Path(TEST_DIR, 'expected_output', 'bidirectional-output.txt')
+        expected_file = Path(TEST_DIR, 'expected_output', 'empty-output.txt')
         
         # Read the content of the output files and expected file into sets
         with open(TARGET_TO_SOURCE_OUT_FILE, 'r') as output_file:
@@ -182,6 +182,10 @@ class TestBowTieBuilder:
 
         # Check if the sets are equal, regardless of the order of lines
         assert output_content == expected_content, 'Output file does not match expected output file'
+
+    """
+    Run the BowTieBuilder algorithm on the example loop network files and check the output matches the expected output
+    """
 
     def test_loop(self):
         LOOP_OUT_FILE.unlink(missing_ok=True)
@@ -200,6 +204,10 @@ class TestBowTieBuilder:
 
         # Check if the sets are equal, regardless of the order of lines
         assert output_content == expected_content, 'Output file does not match expected output file'
+
+    """
+    Run the BowTieBuilder algorithm on the weighted input files and check the output matches the expected output
+    """
 
     def test_weighted(self):
         WEIGHTED_OUT_FILE.unlink(missing_ok=True)
