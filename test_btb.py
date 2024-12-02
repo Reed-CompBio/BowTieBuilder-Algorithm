@@ -6,8 +6,6 @@ import pytest
 
 # TODO consider refactoring to simplify the import
 # Modify the path because of the - in the directory
-# SPRAS_ROOT = Path(__file__).parent.parent.parent.absolute()
-# sys.path.append(str(Path(SPRAS_ROOT, 'docker-wrappers', 'LocalNeighborhood')))
 from btb import btb_wrapper
 
 TEST_DIR = Path('test')
@@ -226,15 +224,3 @@ class TestBowTieBuilder:
 
         # Check if the sets are equal, regardless of the order of lines
         assert output_content == expected_content, 'Output file does not match expected output file'
-
-    # """
-    # Run the BowTieBuilder algorithm with an improperly formatted network file
-    # """
-    # def test_format_error(self):
-    #     with pytest.raises(ValueError):
-    #         btb_wrapper(edge_file=Path(TEST_DIR, 'input', 'btb-bad-edges.txt'),
-    #                         source_file=Path(TEST_DIR, 'input', 'btb-sources.txt'),
-    #                         target_file=Path(TEST_DIR, 'input', 'btb-targets.txt'),
-    #                         output_file=OUT_FILE)
-
-    # Write tests for the BowTieBuilder run function here

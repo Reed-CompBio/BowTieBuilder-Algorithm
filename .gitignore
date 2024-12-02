@@ -107,3 +107,4 @@ venv.bak/
 
 # data files
 referencePathways/reactome/*.gOut
+.DS_Store
