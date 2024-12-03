@@ -1,4 +1,5 @@
 import networkx as nx
+import math
 import argparse
 from pathlib import Path
 
@@ -30,7 +31,10 @@ def read_edges(network_file : Path) -> list:
         for line in (f):
             line = line.strip()
             line = line.split('\t')
-            network.append((line[0], line[1], float(line[2])))
+            if len(line) == 3:  # check if there are exactly three elements in the line
+                network.append((line[0], line[1], float(line[2])))
+            else: 
+                network.append((line[0], line[1], float(1)))
     return network
 
 def read_source_target(source_file : Path, target_file : Path) -> tuple:
@@ -128,6 +132,30 @@ def BTB_main(Network : nx.DiGraph, source : list, target : list) -> nx.DiGraph:
     P = nx.DiGraph()
     P.add_nodes_from(source)
     P.add_nodes_from(target)
+
+    weights = {}
+    if not nx.is_weighted(Network):
+        # Set all weights to 1 if the network is unweighted
+        nx.set_edge_attributes(Network, values=1, name='weight')
+        print('Original Network is unweighted. All weights set to 1.')
+    elif nx.is_weighted(Network, weight = 1):
+        weights = nx.get_edge_attributes(Network, 'weight')
+        nx.set_edge_attributes(Network, values = weights, name = 'weight')
+        print('Original Network is unweighted')
+    else:
+        weights = nx.get_edge_attributes(Network, 'weight')
+
+        # Apply negative log transformation to each weight
+        updated_weights = {
+            edge: -math.log(weight) if weight > 0 else float('inf') 
+            for edge, weight in weights.items()
+        }
+
+        # Update the graph with the transformed weights
+        nx.set_edge_attributes(Network, values=updated_weights, name='weight')
+        print(f'Original Weights: {weights}')
+        print(f'Transformed Weights: {updated_weights}')
+    
 
     # Step 1
     # Initialize the pathway P with all nodes S union T, and flag all nodes in S union T as 'not visited'.
