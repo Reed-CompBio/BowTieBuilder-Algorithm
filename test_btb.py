@@ -14,6 +14,7 @@ BTB_OUT_FILE = Path(TEST_DIR, 'output', 'btb-output.txt')
 DISJOINT_OUT_FILE = Path(TEST_DIR, 'output', 'disjoint-output.txt')
 DISJOINT2_OUT_FILE = Path(TEST_DIR, 'output', 'disjoint2-output.txt')
 SOURCE_TO_SOURCE_OUT_FILE = Path(TEST_DIR, 'output', 'source-to-source-output.txt')
+SOURCE_TO_SOURCE2_OUT_FILE = Path(TEST_DIR, 'output', 'source-to-source2-output.txt')
 SOURCE_TO_SOURCE_DISJOINT_OUT_FILE = Path(TEST_DIR, 'output', 'source-to-source-disjoint-output.txt')
 BIDIRECTIONAL_OUT_FILE = Path(TEST_DIR, 'output', 'bidirectional-output.txt')
 TARGET_TO_SOURCE_OUT_FILE = Path(TEST_DIR, 'output', 'target-to-source-output.txt')
@@ -94,6 +95,7 @@ class TestBowTieBuilder:
                            target_file=Path(TEST_DIR, 'input', 'btb-targets.txt'),
                            output_file=OUT_FILE)
             
+
     """
     Run the BowTieBuilder algorithm on the example source to source input files and check the output matches the expected output
     """
@@ -108,6 +110,27 @@ class TestBowTieBuilder:
         
         # Read the content of the output files and expected file into sets
         with open(SOURCE_TO_SOURCE_OUT_FILE, 'r') as output_file:
+            output_content = set(output_file.read().splitlines())
+        with open(expected_file, 'r') as expected_output_file:
+            expected_content = set(expected_output_file.read().splitlines())
+
+        # Check if the sets are equal, regardless of the order of lines
+        assert output_content == expected_content, 'Output file does not match expected output file'
+
+    """
+    Run the BowTieBuilder algorithm on the example source to source input files and check the output matches the expected output
+    """
+    def test_source_to_source2(self):
+        SOURCE_TO_SOURCE2_OUT_FILE.unlink(missing_ok=True)
+        btb_wrapper(network_file=Path(TEST_DIR, 'input', 'source-to-source2-edges.txt'),
+                           source_file=Path(TEST_DIR, 'input', 'btb-sources.txt'),
+                           target_file=Path(TEST_DIR, 'input', 'btb-targets.txt'),
+                           output_file=SOURCE_TO_SOURCE2_OUT_FILE)
+        assert SOURCE_TO_SOURCE2_OUT_FILE.exists(), 'Output file was not written'
+        expected_file = Path(TEST_DIR, 'expected_output', 'source-to-source2-output.txt')
+        
+        # Read the content of the output files and expected file into sets
+        with open(SOURCE_TO_SOURCE2_OUT_FILE, 'r') as output_file:
             output_content = set(output_file.read().splitlines())
         with open(expected_file, 'r') as expected_output_file:
             expected_content = set(expected_output_file.read().splitlines())
