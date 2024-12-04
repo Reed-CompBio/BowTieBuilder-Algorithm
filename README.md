@@ -7,5 +7,5 @@ A simple pathway reconstruction algorithm used to welcome new contributors. The 
 
 New contributors complete the Dockerfile to wrap the implementation in btb.py.
 
-# Usage (...)
-
+# Usage 
+Implemented into the Signaling Pathway Reconstruction Streamliner [(SPRAS)](https://github.com/Reed-CompBio/spras).

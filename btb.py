@@ -1,4 +1,5 @@
 import networkx as nx
+import math
 import argparse
 from pathlib import Path
 
@@ -10,26 +11,30 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         description="BowTieBuilder pathway reconstruction"
     )
-    parser.add_argument("--edges", type=Path, required=True,
+    parser.add_argument("--network_file", type=Path, required=True,
                         help="Path to the edges file")
-    parser.add_argument("--sources", type=Path, required=True,
+    parser.add_argument("--source_file", type=Path, required=True,
                         help="Path to the sources file")
-    parser.add_argument("--targets", type=Path, required=True,
+    parser.add_argument("--target_file", type=Path, required=True,
                         help="Path to the targets file")
-    parser.add_argument("--output", type=Path, required=True,
+    parser.add_argument("--output_file", type=Path, required=True,
                         help="Path to the output file that will be written")
 
     return parser.parse_args()
 
 
 # functions for reading input files
-def read_network(network_file : Path) -> list:
+def read_edges(network_file : Path) -> list:
     network = []
+    print(network_file)
     with open(network_file, 'r') as f:
         for line in (f):
             line = line.strip()
             line = line.split('\t')
-            network.append((line[0], line[1], float(line[2])))
+            if len(line) == 3:  # check if there are exactly three elements in the line
+                network.append((line[0], line[1], float(line[2])))
+            else: 
+                network.append((line[0], line[1], float(1)))
     return network
 
 def read_source_target(source_file : Path, target_file : Path) -> tuple:
@@ -47,6 +52,7 @@ def read_source_target(source_file : Path, target_file : Path) -> tuple:
 
 # functions for constructing the network
 def construct_network(network : list, source : list, target : list) -> nx.DiGraph:
+    print(network)
     Network = nx.DiGraph()
     Network.add_weighted_edges_from(network)
     Network.add_nodes_from(source)
@@ -126,6 +132,30 @@ def BTB_main(Network : nx.DiGraph, source : list, target : list) -> nx.DiGraph:
     P = nx.DiGraph()
     P.add_nodes_from(source)
     P.add_nodes_from(target)
+
+    weights = {}
+    if not nx.is_weighted(Network):
+        # Set all weights to 1 if the network is unweighted
+        nx.set_edge_attributes(Network, values=1, name='weight')
+        print('Original Network is unweighted. All weights set to 1.')
+    elif nx.is_weighted(Network, weight = 1):
+        weights = nx.get_edge_attributes(Network, 'weight')
+        nx.set_edge_attributes(Network, values = weights, name = 'weight')
+        print('Original Network is unweighted')
+    else:
+        weights = nx.get_edge_attributes(Network, 'weight')
+
+        # Apply negative log transformation to each weight
+        updated_weights = {
+            edge: -math.log(weight) if weight > 0 else float('inf') 
+            for edge, weight in weights.items()
+        }
+
+        # Update the graph with the transformed weights
+        nx.set_edge_attributes(Network, values=updated_weights, name='weight')
+        print(f'Original Weights: {weights}')
+        print(f'Transformed Weights: {updated_weights}')
+    
 
     # Step 1
     # Initialize the pathway P with all nodes S union T, and flag all nodes in S union T as 'not visited'.
@@ -241,19 +271,20 @@ def write_output(output_file, P):
         for edge in P.edges:
             f.write(edge[0] + '\t' + edge[1] + '\n')
 
-def btb_wrapper(edges : Path, sources : Path, targets : Path, output_file : Path):
+def btb_wrapper(network_file : Path, source_file : Path, target_file : Path, output_file : Path):
     """
     Run BowTieBuilder pathway reconstruction.
-    @param network_file: Path to the network file
-    @param source_target_file: Path to the source/target file
+    @param network_file: Path to the edge file
+    @param source_file: Path to the source file
+    @param target_file: Path to the source file
     @param output_file: Path to the output file that will be written
     """
-    if not edges.exists():
-        raise OSError(f"Edges file {str(edges)} does not exist")
-    if not sources.exists():
-        raise OSError(f"Sources file {str(sources)} does not exist")
-    if not targets.exists():
-        raise OSError(f"Targets file {str(targets)} does not exist")
+    if not network_file.exists():
+        raise OSError(f"Edges file {str(network_file)} does not exist")
+    if not source_file.exists():
+        raise OSError(f"Sources file {str(source_file)} does not exist")
+    if not target_file.exists():
+        raise OSError(f"Targets file {str(target_file)} does not exist")
     
 
     if output_file.exists():
@@ -263,8 +294,8 @@ def btb_wrapper(edges : Path, sources : Path, targets : Path, output_file : Path
     output_file.parent.mkdir(parents=True, exist_ok=True)
     
     
-    edge_list = read_network(edges)
-    source, target = read_source_target(sources, targets)
+    edge_list = read_edges(network_file)
+    source, target = read_source_target(source_file, target_file)
     network = construct_network(edge_list, source, target)
 
     write_output(output_file, BTB_main(network, source, target))
@@ -278,10 +309,10 @@ def main():
     # path length - l
     # test_mode - default to be false
     btb_wrapper(
-        args.edges,
-        args.sources,
-        args.targets,
-        args.output
+        args.network_file,
+        args.source_file,
+        args.target_file,
+        args.output_file
     )
 
 if __name__ == "__main__":
