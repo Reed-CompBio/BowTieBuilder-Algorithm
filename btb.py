@@ -11,11 +11,11 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         description="BowTieBuilder pathway reconstruction"
     )
-    parser.add_argument("--network_file", type=Path, required=True,
+    parser.add_argument("--edges", type=Path, required=True,
                         help="Path to the edges file")
-    parser.add_argument("--source_file", type=Path, required=True,
+    parser.add_argument("--sources", type=Path, required=True,
                         help="Path to the sources file")
-    parser.add_argument("--target_file", type=Path, required=True,
+    parser.add_argument("--targets", type=Path, required=True,
                         help="Path to the targets file")
     parser.add_argument("--output_file", type=Path, required=True,
                         help="Path to the output file that will be written")
@@ -271,20 +271,20 @@ def write_output(output_file, P):
         for edge in P.edges:
             f.write(edge[0] + '\t' + edge[1] + '\n')
 
-def btb_wrapper(network_file : Path, source_file : Path, target_file : Path, output_file : Path):
+def btb_wrapper(edges : Path, sources : Path, targets : Path, output_file : Path):
     """
     Run BowTieBuilder pathway reconstruction.
-    @param network_file: Path to the edge file
-    @param source_file: Path to the source file
-    @param target_file: Path to the source file
+    @param edges: Path to the edge file
+    @param sources: Path to the source file
+    @param targets: Path to the source file
     @param output_file: Path to the output file that will be written
     """
-    if not network_file.exists():
-        raise OSError(f"Edges file {str(network_file)} does not exist")
-    if not source_file.exists():
-        raise OSError(f"Sources file {str(source_file)} does not exist")
-    if not target_file.exists():
-        raise OSError(f"Targets file {str(target_file)} does not exist")
+    if not edges.exists():
+        raise OSError(f"Edges file {str(edges)} does not exist")
+    if not sources.exists():
+        raise OSError(f"Sources file {str(sources)} does not exist")
+    if not targets.exists():
+        raise OSError(f"Targets file {str(targets)} does not exist")
     
 
     if output_file.exists():
@@ -294,8 +294,8 @@ def btb_wrapper(network_file : Path, source_file : Path, target_file : Path, out
     output_file.parent.mkdir(parents=True, exist_ok=True)
     
     
-    edge_list = read_edges(network_file)
-    source, target = read_source_target(source_file, target_file)
+    edge_list = read_edges(edges)
+    source, target = read_source_target(sources, targets)
     network = construct_network(edge_list, source, target)
 
     write_output(output_file, BTB_main(network, source, target))
@@ -309,9 +309,9 @@ def main():
     # path length - l
     # test_mode - default to be false
     btb_wrapper(
-        args.network_file,
-        args.source_file,
-        args.target_file,
+        args.edges,
+        args.sources,
+        args.targets,
         args.output_file
     )
 
