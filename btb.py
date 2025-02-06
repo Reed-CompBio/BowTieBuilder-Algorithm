@@ -153,8 +153,8 @@ def BTB_main(Network : nx.DiGraph, source : list, target : list) -> nx.DiGraph:
 
         # Update the graph with the transformed weights
         nx.set_edge_attributes(Network, values=updated_weights, name='weight')
-        print(f'Original Weights: {weights}')
-        print(f'Transformed Weights: {updated_weights}')
+        # print(f'Original Weights: {weights}')
+        # print(f'Transformed Weights: {updated_weights}')
     
 
     # Step 1
@@ -182,7 +182,7 @@ def BTB_main(Network : nx.DiGraph, source : list, target : list) -> nx.DiGraph:
             else:
                 D[i, j] = [float('inf'), []]
                        
-    print(f'Original D: {D}')
+    # print(f'Original D: {D}')
 
     # source_target is the union of source and target
     source_target = source + target
@@ -192,8 +192,8 @@ def BTB_main(Network : nx.DiGraph, source : list, target : list) -> nx.DiGraph:
     
     # need to check if there is a path between source and target 
     while not_visited != []:
-        print("\n\nIteration: ", index)
-        print(f"Current not visited nodes: {not_visited}")
+        # print("\n\nIteration: ", index)
+        # print(f"Current not visited nodes: {not_visited}")
         
         # Set initial values
         min_value = float('inf')
@@ -262,7 +262,7 @@ def BTB_main(Network : nx.DiGraph, source : list, target : list) -> nx.DiGraph:
         
         index += 1
     
-    print(f"\nThe final pathway is: {P.edges}")
+    # print(f"\nThe final pathway is: {P.edges}")
     return P
 
 def write_output(output_file, P):
