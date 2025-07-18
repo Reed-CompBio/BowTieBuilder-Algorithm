@@ -3,7 +3,7 @@ This repository contains a python implementation of the [BowTieBuilder Algorithm
 
 ## Installation
 
-The recommended python version is at [./python-version](./python-version), which is currently 3.13. All required dependencies are available at `pyproject.toml`.
+The recommended python version is at [./.python-version](./.python-version), which is currently 3.13. All required dependencies are available at `pyproject.toml`.
 
 ## Usage
 Implemented into the Signaling Pathway Reconstruction Streamliner [(SPRAS)](https://github.com/Reed-CompBio/spras).
