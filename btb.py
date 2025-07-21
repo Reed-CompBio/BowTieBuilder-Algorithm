@@ -183,6 +183,27 @@ def update_D(network: nx.DiGraph, i: str, j: str, D: dict) -> None:
         D[(i, j)] = [float("inf"), []]
         # print(f"There is no path between {i} and {j}")
 
+def update_D_multitarget(network: nx.DiGraph, source: str, targets: list[str], D: dict, reverse=False) -> None:
+    # adapted from multi_source_dijkstra
+    paths = {source: [source]}
+    weight = lambda u, v, data: data.get(weight, 1)
+    dist = dijkstra_multisource_multitarget(network, {source}, weight, paths=paths, targets=targets)
+
+    for target in targets:
+        if target in dist:
+            path = paths[target]
+            if reverse:
+                path.reverse()
+                D[(target, source)] = [dist[target], paths[target]]
+            else:
+                D[(source, target)] = [dist[target], paths[target]]
+        else:
+            if reverse:
+                D[(target, source)] = [float("inf"), []]
+            else:
+                D[(source, target)] = [float("inf"), []]
+            # print(f"There is no path between {i} and {j}")
+
 def add_path_to_P(path: list, P: nx.DiGraph) -> None:
     for i in range(len(path) - 1):
         P.add_edge(path[i], path[i + 1])
@@ -245,7 +266,7 @@ def check_not_visited_not_visited(not_visited: list, D: dict) -> tuple:
                         current_t = not_visited[i]
     return current_path, current_s, current_t, min_value
 
-def BTB_main(network: nx.DiGraph, source: list, target: list) -> nx.DiGraph:
+def BTB_main(network: nx.DiGraph, sources: list, targets: list) -> nx.DiGraph:
     # We do this to do avoid re-implementing a reverse multi-target dijkstra. TODO: This is more
     # expensive on memory. Also see an issue on why we needed to implement a multi-target dijkstra:
     # https://github.com/networkx/networkx/issues/703.
@@ -254,8 +275,8 @@ def BTB_main(network: nx.DiGraph, source: list, target: list) -> nx.DiGraph:
     # P is the returned pathway
     P = nx.DiGraph()
 
-    P.add_nodes_from(source)
-    P.add_nodes_from(target)
+    P.add_nodes_from(sources)
+    P.add_nodes_from(targets)
 
     weights = {}
     if not nx.is_weighted(network):
@@ -285,20 +306,20 @@ def BTB_main(network: nx.DiGraph, source: list, target: list) -> nx.DiGraph:
     not_visited = []
     visited = []
 
-    for i in source:
+    for i in sources:
         not_visited.append(i)
-    for j in target:
+    for j in targets:
         not_visited.append(j)
 
     # D is the distance matrix
     # Format
     D = {}
-    for i in source:
+    for i in sources:
         # run a single_source_dijsktra to find the shortest path from source to every other nodes
         # val is the shortest distance from source to every other nodes
         # path is the shortest path from source to every other nodes
         val, path = nx.single_source_dijkstra(network, i)
-        for j in target:
+        for j in targets:
             # if there is a path between i and j, then add the distance and the path to D
             if j in val:
                 D[i, j] = [val[j], path[j]]
@@ -307,8 +328,8 @@ def BTB_main(network: nx.DiGraph, source: list, target: list) -> nx.DiGraph:
 
     # print(f'Original D: {D}')
 
-    # source_target is the union of source and target
-    source_target = source + target
+    # sources_targets is the union of sources and targets
+    sources_targets = sources + targets
 
     # Index is for debugging (will be removed later)
     index = 1
@@ -367,14 +388,11 @@ def BTB_main(network: nx.DiGraph, source: list, target: list) -> nx.DiGraph:
 
         # If we successfully extract the path, then update the distance matrix (step 5)
 
-        # TODO: this is the slow part
         for i in current_path:
-            if i not in source_target:
+            if i not in sources_targets:
                 # Since D is a matrix from Source to Target, we need to update the distance from source to i and from i to target
-                for s in source:
-                    update_D(network, s, i, D)
-                for t in target:
-                    update_D(network, i, t, D)
+                update_D_multitarget(network_reverse, i, sources, D, reverse=True)
+                update_D_multitarget(network, i, targets, D)
                 # Update the distance from i to i
                 D[(i, i)] = [float("inf"), []]
 
