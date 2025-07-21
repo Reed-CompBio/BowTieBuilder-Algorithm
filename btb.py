@@ -1,8 +1,112 @@
 import networkx as nx
 import math
 import argparse
+from heapq import heappop, heappush
+from itertools import count
 from pathlib import Path
 
+# From networkx, adapted to use multiple targets
+def dijkstra_multisource_multitarget(
+    G, sources, weight, pred=None, paths=None, cutoff=None, targets: list|None=None
+):
+    """Uses Dijkstra's algorithm to find shortest weighted paths
+
+    Parameters
+    ----------
+    G : NetworkX graph
+
+    sources : non-empty iterable of nodes
+        Starting nodes for paths. If this is just an iterable containing
+        a single node, then all paths computed by this function will
+        start from that node. If there are two or more nodes in this
+        iterable, the computed paths may begin from any one of the start
+        nodes.
+
+    weight: function
+        Function with (u, v, data) input that returns that edge's weight
+        or None to indicate a hidden edge
+
+    pred: dict of lists, optional(default=None)
+        dict to store a list of predecessors keyed by that node
+        If None, predecessors are not stored.
+
+    paths: dict, optional (default=None)
+        dict to store the path list from source to each node, keyed by node.
+        If None, paths are not stored.
+
+    targets : list of node labels, optional
+        Ending node for path. Search is halted when all targets are found.
+
+    cutoff : integer or float, optional
+        Length (sum of edge weights) at which the search is stopped.
+        If cutoff is provided, only return paths with summed weight <= cutoff.
+
+    Returns
+    -------
+    distance : dictionary
+        A mapping from node to shortest distance to that node from one
+        of the source nodes.
+
+    Raises
+    ------
+    NodeNotFound
+        If any of `sources` is not in `G`.
+
+    Notes
+    -----
+    The optional predecessor and path dictionaries can be accessed by
+    the caller through the original pred and paths objects passed
+    as arguments. No need to explicitly return pred or paths.
+
+    """
+    G_succ = G._adj  # For speed-up (and works for both directed and undirected graphs)
+
+    dist = {}  # dictionary of final distances
+    seen = {}
+    # fringe is heapq with 3-tuples (distance,c,node)
+    # use the count c to avoid comparing nodes (may not be able to)
+    c = count()
+    fringe = []
+    for source in sources:
+        seen[source] = 0
+        heappush(fringe, (0, next(c), source))
+    while fringe:
+        (d, _, v) = heappop(fringe)
+        if v in dist:
+            continue  # already searched this node.
+        dist[v] = d
+        if targets and v in targets:
+            targets.remove(v)
+            if len(targets) == 0:
+                break
+        for u, e in G_succ[v].items():
+            cost = weight(v, u, e)
+            if cost is None:
+                continue
+            vu_dist = dist[v] + cost
+            if cutoff is not None:
+                if vu_dist > cutoff:
+                    continue
+            if u in dist:
+                u_dist = dist[u]
+                if vu_dist < u_dist:
+                    raise ValueError("Contradictory paths found:", "negative weights?")
+                elif pred is not None and vu_dist == u_dist:
+                    pred[u].append(v)
+            elif u not in seen or vu_dist < seen[u]:
+                seen[u] = vu_dist
+                heappush(fringe, (vu_dist, next(c), u))
+                if paths is not None:
+                    paths[u] = paths[v] + [u]
+                if pred is not None:
+                    pred[u] = [v]
+            elif vu_dist == seen[u]:
+                if pred is not None:
+                    pred[u].append(v)
+
+    # The optional predecessor and path dictionaries can be accessed
+    # by the caller via the pred and paths objects passed as arguments.
+    return dist
 
 def parse_arguments():
     """
@@ -44,23 +148,22 @@ def read_edges(network_file: Path) -> list:
     return network
 
 
-def read_source_target(source_file: Path, target_file: Path) -> tuple:
-    source = []
-    target = []
+def read_source_target(source_file: Path, target_file: Path) -> tuple[list[str], list[str]]:
+    sources: list[str] = []
+    targets: list[str] = []
     with open(source_file, "r") as f:
         for line in f:
             line = line.strip()
-            source.append(line)
+            sources.append(line)
     with open(target_file, "r") as f:
         for line in f:
             line = line.strip()
-            target.append(line)
-    return source, target
+            targets.append(line)
+    return sources, targets
 
 
 # functions for constructing the network
-def construct_network(network: list, source: list, target: list) -> nx.DiGraph:
-    print(network)
+def construct_network(network: list, source: list[str], target: list[str]) -> nx.DiGraph:
     Network = nx.DiGraph()
     Network.add_weighted_edges_from(network)
     Network.add_nodes_from(source)
@@ -71,14 +174,14 @@ def construct_network(network: list, source: list, target: list) -> nx.DiGraph:
 def update_D(network: nx.DiGraph, i: str, j: str, D: dict) -> None:
     # check if there is a path between i and j
     if nx.has_path(network, i, j):
+        (length, path) = nx.single_source_dijkstra(network, i, j)
         D[(i, j)] = [
-            nx.dijkstra_path_length(network, i, j),
-            nx.dijkstra_path(network, i, j),
+            length,
+            path,
         ]
     else:
         D[(i, j)] = [float("inf"), []]
         # print(f"There is no path between {i} and {j}")
-
 
 def add_path_to_P(path: list, P: nx.DiGraph) -> None:
     for i in range(len(path) - 1):
@@ -142,24 +245,29 @@ def check_not_visited_not_visited(not_visited: list, D: dict) -> tuple:
                         current_t = not_visited[i]
     return current_path, current_s, current_t, min_value
 
-
-def BTB_main(Network: nx.DiGraph, source: list, target: list) -> nx.DiGraph:
+def BTB_main(network: nx.DiGraph, source: list, target: list) -> nx.DiGraph:
+    # We do this to do avoid re-implementing a reverse multi-target dijkstra. TODO: This is more
+    # expensive on memory. Also see an issue on why we needed to implement a multi-target dijkstra:
+    # https://github.com/networkx/networkx/issues/703.
+    network_reverse = network.reverse()
+    
     # P is the returned pathway
     P = nx.DiGraph()
+
     P.add_nodes_from(source)
     P.add_nodes_from(target)
 
     weights = {}
-    if not nx.is_weighted(Network):
+    if not nx.is_weighted(network):
         # Set all weights to 1 if the network is unweighted
-        nx.set_edge_attributes(Network, values=1, name="weight")
+        nx.set_edge_attributes(network, values=1, name="weight")
         print("Original Network is unweighted. All weights set to 1.")
-    elif nx.is_weighted(Network, weight=1):
-        weights = nx.get_edge_attributes(Network, "weight")
-        nx.set_edge_attributes(Network, values=weights, name="weight")
+    elif nx.is_weighted(network, weight=1):
+        weights = nx.get_edge_attributes(network, "weight")
+        nx.set_edge_attributes(network, values=weights, name="weight")
         print("Original Network is unweighted")
     else:
-        weights = nx.get_edge_attributes(Network, "weight")
+        weights = nx.get_edge_attributes(network, "weight")
 
         # Apply negative log transformation to each weight
         updated_weights = {
@@ -168,7 +276,7 @@ def BTB_main(Network: nx.DiGraph, source: list, target: list) -> nx.DiGraph:
         }
 
         # Update the graph with the transformed weights
-        nx.set_edge_attributes(Network, values=updated_weights, name="weight")
+        nx.set_edge_attributes(network, values=updated_weights, name="weight")
         # print(f'Original Weights: {weights}')
         # print(f'Transformed Weights: {updated_weights}')
 
@@ -189,7 +297,7 @@ def BTB_main(Network: nx.DiGraph, source: list, target: list) -> nx.DiGraph:
         # run a single_source_dijsktra to find the shortest path from source to every other nodes
         # val is the shortest distance from source to every other nodes
         # path is the shortest path from source to every other nodes
-        val, path = nx.single_source_dijkstra(Network, i)
+        val, path = nx.single_source_dijkstra(network, i)
         for j in target:
             # if there is a path between i and j, then add the distance and the path to D
             if j in val:
@@ -258,13 +366,15 @@ def BTB_main(Network: nx.DiGraph, source: list, target: list) -> nx.DiGraph:
             break
 
         # If we successfully extract the path, then update the distance matrix (step 5)
+
+        # TODO: this is the slow part
         for i in current_path:
             if i not in source_target:
                 # Since D is a matrix from Source to Target, we need to update the distance from source to i and from i to target
                 for s in source:
-                    update_D(Network, s, i, D)
+                    update_D(network, s, i, D)
                 for t in target:
-                    update_D(Network, i, t, D)
+                    update_D(network, i, t, D)
                 # Update the distance from i to i
                 D[(i, i)] = [float("inf"), []]
 
@@ -292,7 +402,7 @@ def write_output(output_file, P):
             f.write(edge[0] + "\t" + edge[1] + "\n")
 
 
-def btb_wrapper(edges: Path, sources: Path, targets: Path, output_file: Path):
+def btb_wrapper(edges: Path, sources_path: Path, targets_path: Path, output_file: Path):
     """
     Run BowTieBuilder pathway reconstruction.
     @param edges: Path to the edge file
@@ -302,10 +412,10 @@ def btb_wrapper(edges: Path, sources: Path, targets: Path, output_file: Path):
     """
     if not edges.exists():
         raise OSError(f"Edges file {str(edges)} does not exist")
-    if not sources.exists():
-        raise OSError(f"Sources file {str(sources)} does not exist")
-    if not targets.exists():
-        raise OSError(f"Targets file {str(targets)} does not exist")
+    if not sources_path.exists():
+        raise OSError(f"Sources file {str(sources_path)} does not exist")
+    if not targets_path.exists():
+        raise OSError(f"Targets file {str(targets_path)} does not exist")
 
     if output_file.exists():
         print(f"Output files {str(output_file)} (nodes) will be overwritten")
@@ -314,10 +424,12 @@ def btb_wrapper(edges: Path, sources: Path, targets: Path, output_file: Path):
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
     edge_list = read_edges(edges)
-    source, target = read_source_target(sources, targets)
-    network = construct_network(edge_list, source, target)
+    sources, targets = read_source_target(sources_path, targets_path)
+    network = construct_network(edge_list, sources, targets)
 
-    write_output(output_file, BTB_main(network, source, target))
+    output_graph = BTB_main(network, sources, targets)
+
+    write_output(output_file, output_graph)
 
 
 def main():

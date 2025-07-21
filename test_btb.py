@@ -35,8 +35,8 @@ class TestBowTieBuilder:
         BTB_OUT_FILE.unlink(missing_ok=True)
         btb_wrapper(
             edges=Path(TEST_DIR, "input", "btb-edges.txt"),
-            sources=Path(TEST_DIR, "input", "btb-sources.txt"),
-            targets=Path(TEST_DIR, "input", "btb-targets.txt"),
+            sources_path=Path(TEST_DIR, "input", "btb-sources.txt"),
+            targets_path=Path(TEST_DIR, "input", "btb-targets.txt"),
             output_file=BTB_OUT_FILE,
         )
         assert BTB_OUT_FILE.exists(), "Output file was not written"
@@ -61,8 +61,8 @@ class TestBowTieBuilder:
         DISJOINT_OUT_FILE.unlink(missing_ok=True)
         btb_wrapper(
             edges=Path(TEST_DIR, "input", "disjoint-edges.txt"),
-            sources=Path(TEST_DIR, "input", "disjoint-sources.txt"),
-            targets=Path(TEST_DIR, "input", "disjoint-targets.txt"),
+            sources_path=Path(TEST_DIR, "input", "disjoint-sources.txt"),
+            targets_path=Path(TEST_DIR, "input", "disjoint-targets.txt"),
             output_file=DISJOINT_OUT_FILE,
         )
         assert DISJOINT_OUT_FILE.exists(), "Output file was not written"
@@ -87,8 +87,8 @@ class TestBowTieBuilder:
         DISJOINT2_OUT_FILE.unlink(missing_ok=True)
         btb_wrapper(
             edges=Path(TEST_DIR, "input", "disjoint2-edges.txt"),
-            sources=Path(TEST_DIR, "input", "disjoint-sources.txt"),
-            targets=Path(TEST_DIR, "input", "disjoint-targets.txt"),
+            sources_path=Path(TEST_DIR, "input", "disjoint-sources.txt"),
+            targets_path=Path(TEST_DIR, "input", "disjoint-targets.txt"),
             output_file=DISJOINT2_OUT_FILE,
         )
         assert DISJOINT2_OUT_FILE.exists(), "Output file was not written"
@@ -113,8 +113,8 @@ class TestBowTieBuilder:
         with pytest.raises(OSError):
             btb_wrapper(
                 edges=Path(TEST_DIR, "input", "missing.txt"),
-                sources=Path(TEST_DIR, "input", "btb-sources.txt"),
-                targets=Path(TEST_DIR, "input", "btb-targets.txt"),
+                sources_path=Path(TEST_DIR, "input", "btb-sources.txt"),
+                targets_path=Path(TEST_DIR, "input", "btb-targets.txt"),
                 output_file=OUT_FILE,
             )
 
@@ -126,8 +126,8 @@ class TestBowTieBuilder:
         SOURCE_TO_SOURCE_OUT_FILE.unlink(missing_ok=True)
         btb_wrapper(
             edges=Path(TEST_DIR, "input", "source-to-source-edges.txt"),
-            sources=Path(TEST_DIR, "input", "btb-sources.txt"),
-            targets=Path(TEST_DIR, "input", "btb-targets.txt"),
+            sources_path=Path(TEST_DIR, "input", "btb-sources.txt"),
+            targets_path=Path(TEST_DIR, "input", "btb-targets.txt"),
             output_file=SOURCE_TO_SOURCE_OUT_FILE,
         )
         assert SOURCE_TO_SOURCE_OUT_FILE.exists(), "Output file was not written"
@@ -152,8 +152,8 @@ class TestBowTieBuilder:
         SOURCE_TO_SOURCE2_OUT_FILE.unlink(missing_ok=True)
         btb_wrapper(
             edges=Path(TEST_DIR, "input", "source-to-source2-edges.txt"),
-            sources=Path(TEST_DIR, "input", "btb-sources.txt"),
-            targets=Path(TEST_DIR, "input", "btb-targets.txt"),
+            sources_path=Path(TEST_DIR, "input", "btb-sources.txt"),
+            targets_path=Path(TEST_DIR, "input", "btb-targets.txt"),
             output_file=SOURCE_TO_SOURCE2_OUT_FILE,
         )
         assert SOURCE_TO_SOURCE2_OUT_FILE.exists(), "Output file was not written"
@@ -180,8 +180,8 @@ class TestBowTieBuilder:
         SOURCE_TO_SOURCE_DISJOINT_OUT_FILE.unlink(missing_ok=True)
         btb_wrapper(
             edges=Path(TEST_DIR, "input", "source-to-source-disjoint-edges.txt"),
-            sources=Path(TEST_DIR, "input", "btb-sources.txt"),
-            targets=Path(TEST_DIR, "input", "btb-targets.txt"),
+            sources_path=Path(TEST_DIR, "input", "btb-sources.txt"),
+            targets_path=Path(TEST_DIR, "input", "btb-targets.txt"),
             output_file=SOURCE_TO_SOURCE_DISJOINT_OUT_FILE,
         )
         assert SOURCE_TO_SOURCE_DISJOINT_OUT_FILE.exists(), (
@@ -210,8 +210,8 @@ class TestBowTieBuilder:
         BIDIRECTIONAL_OUT_FILE.unlink(missing_ok=True)
         btb_wrapper(
             edges=Path(TEST_DIR, "input", "bidirectional-edges.txt"),
-            sources=Path(TEST_DIR, "input", "btb-sources.txt"),
-            targets=Path(TEST_DIR, "input", "btb-targets.txt"),
+            sources_path=Path(TEST_DIR, "input", "btb-sources.txt"),
+            targets_path=Path(TEST_DIR, "input", "btb-targets.txt"),
             output_file=BIDIRECTIONAL_OUT_FILE,
         )
         assert BIDIRECTIONAL_OUT_FILE.exists(), "Output file was not written"
@@ -236,8 +236,8 @@ class TestBowTieBuilder:
         TARGET_TO_SOURCE_OUT_FILE.unlink(missing_ok=True)
         btb_wrapper(
             edges=Path(TEST_DIR, "input", "target-to-source-edges.txt"),
-            sources=Path(TEST_DIR, "input", "btb-sources.txt"),
-            targets=Path(TEST_DIR, "input", "btb-targets.txt"),
+            sources_path=Path(TEST_DIR, "input", "btb-sources.txt"),
+            targets_path=Path(TEST_DIR, "input", "btb-targets.txt"),
             output_file=TARGET_TO_SOURCE_OUT_FILE,
         )
         assert TARGET_TO_SOURCE_OUT_FILE.exists(), "Output file was not written"
@@ -262,8 +262,8 @@ class TestBowTieBuilder:
         LOOP_OUT_FILE.unlink(missing_ok=True)
         btb_wrapper(
             edges=Path(TEST_DIR, "input", "loop-edges.txt"),
-            sources=Path(TEST_DIR, "input", "btb-sources.txt"),
-            targets=Path(TEST_DIR, "input", "btb-targets.txt"),
+            sources_path=Path(TEST_DIR, "input", "btb-sources.txt"),
+            targets_path=Path(TEST_DIR, "input", "btb-targets.txt"),
             output_file=LOOP_OUT_FILE,
         )
         assert LOOP_OUT_FILE.exists(), "Output file was not written"
@@ -288,8 +288,8 @@ class TestBowTieBuilder:
         WEIGHTED_OUT_FILE.unlink(missing_ok=True)
         btb_wrapper(
             edges=Path(TEST_DIR, "input", "weighted-edges.txt"),
-            sources=Path(TEST_DIR, "input", "btb-sources.txt"),
-            targets=Path(TEST_DIR, "input", "btb-targets.txt"),
+            sources_path=Path(TEST_DIR, "input", "btb-sources.txt"),
+            targets_path=Path(TEST_DIR, "input", "btb-targets.txt"),
             output_file=WEIGHTED_OUT_FILE,
         )
         assert WEIGHTED_OUT_FILE.exists(), "Output file was not written"
@@ -310,8 +310,8 @@ class TestBowTieBuilder:
         NO_WEIGHT_OUT_FILE.unlink(missing_ok=True)
         btb_wrapper(
             edges=Path(TEST_DIR, "input", "no-weight-edges.txt"),
-            sources=Path(TEST_DIR, "input", "btb-sources.txt"),
-            targets=Path(TEST_DIR, "input", "btb-targets.txt"),
+            sources_path=Path(TEST_DIR, "input", "btb-sources.txt"),
+            targets_path=Path(TEST_DIR, "input", "btb-targets.txt"),
             output_file=NO_WEIGHT_OUT_FILE,
         )
         assert NO_WEIGHT_OUT_FILE.exists(), "Output file was not written"
@@ -332,8 +332,8 @@ class TestBowTieBuilder:
         WEIGHT_ONE_OUT_FILE.unlink(missing_ok=True)
         btb_wrapper(
             edges=Path(TEST_DIR, "input", "weight-one-edges.txt"),
-            sources=Path(TEST_DIR, "input", "btb-sources.txt"),
-            targets=Path(TEST_DIR, "input", "btb-targets.txt"),
+            sources_path=Path(TEST_DIR, "input", "btb-sources.txt"),
+            targets_path=Path(TEST_DIR, "input", "btb-targets.txt"),
             output_file=WEIGHT_ONE_OUT_FILE,
         )
         assert WEIGHT_ONE_OUT_FILE.exists(), "Output file was not written"
